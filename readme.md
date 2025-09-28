@@ -27,7 +27,7 @@ Le projet utilise un **script Bash léger** avec un fichier `.env` pour stocker 
 TELEGRAM_TOKEN="TON_TOKEN_BOT"
 TELEGRAM_CHAT_ID="TON_CHAT_ID"
 DISK_THRESHOLD=80
-DISK_PATHS=(/ /mnt/disquenoir /mnt/1to /mnt/freebox_raid /mnt/tosh)
+DISK_PATHS=(/ /mnt/partage_reseau /mnt/serveur_fbi /mnt/scanner /mnt/disque_externe_1)
 ```
 
 2. **Script Bash `check_disk_alert.sh`** :
@@ -45,10 +45,10 @@ sudo /usr/local/bin/check_disk_alert.sh
    Le message Telegram ressemble à :
    
 ```text
-Alerte disque sur piserve:
-/mnt/1to : 96% utilise 880G sur 917G
-/mnt/freebox_raid : 100% utilise 584G sur 587G
-/mnt/tosh : 100% utilise 1,9T sur 1,9T
+Alerte disque sur ton_nom_de_serveur:
+/mnt/serveur_fbi : 96% utilise 880G sur 917G
+/mnt/scanner : 100% utilise 584G sur 587G
+/mnt/disque_externe_1 : 100% utilise 1,9T sur 1,9T
 ```
 
 - Peut être automatisé avec cron pour vérification régulière
@@ -83,7 +83,7 @@ Alerte disque sur piserve:
    - Éviter les caractères problématiques (é, è, emojis complexes) ou les convertir avant en texte compatible MarkdownV2
 
 3. **Notification consolidée** :
-   - Envoyer un seul message pour toutes les partitions, avec un indicateur visuel de saturation
+   - Afficher un indicateur visuel de saturation
 
 4. **Historique et logging** :
    - Sauvegarder l'historique des alertes pour suivi
@@ -97,18 +97,66 @@ Alerte disque sur piserve:
 
 ## Configuration
 
-### Obtenir un token Telegram
+### Étape 1 : Créer un compte Telegram
 
-1. Contactez [@BotFather](https://t.me/BotFather) sur Telegram
-2. Créez un nouveau bot avec `/newbot`
-3. Suivez les instructions et récupérez votre token
+Si vous n'avez pas encore de compte Telegram :
 
-### Obtenir votre Chat ID
+1. **Téléchargez Telegram** :
+   - 📱 **Mobile** : [App Store](https://apps.apple.com/app/telegram-messenger/id686449807) ou [Google Play](https://play.google.com/store/apps/details?id=org.telegram.messenger)
+   - 💻 **Desktop** : [telegram.org/desktop](https://desktop.telegram.org/)
+   - 🌐 **Web** : [web.telegram.org](https://web.telegram.org/)
 
-1. Contactez [@userinfobot](https://t.me/userinfobot) sur Telegram
-2. Il vous donnera votre Chat ID
-3. Ou utilisez votre bot : envoyez un message à votre bot puis visitez :
-   `https://api.telegram.org/bot<VOTRE_TOKEN>/getUpdates`
+2. **Créez votre compte** avec votre numéro de téléphone
+3. **Vérifiez** avec le code SMS reçu
+
+### Étape 2 : Créer un bot Telegram avec BotFather
+
+1. **Ouvrez Telegram** et recherchez `@BotFather` ou cliquez sur [@BotFather](https://t.me/BotFather)
+
+2. **Démarrez une conversation** avec BotFather en cliquant sur "Démarrer" ou en tapant `/start`
+
+3. **Créez un nouveau bot** :
+
+   ```text
+   /newbot
+   ```
+
+4. **Choisissez un nom** pour votre bot (ex: "Mon Surveillant Disque")
+
+5. **Choisissez un nom d'utilisateur** unique se terminant par "bot" (ex: `mon_disk_alert_bot`)
+
+6. **Récupérez votre token** : BotFather vous donnera un token qui ressemble à :
+
+   ```text
+   123456789:ABCdefGHIjklMNOpqrsTUVwxyz
+   ```
+
+   ⚠️ **Gardez ce token secret !**
+
+### Étape 3 : Obtenir votre Chat ID
+
+**Méthode 1 (la plus simple) :**
+
+1. Recherchez `@userinfobot` ou cliquez sur [@userinfobot](https://t.me/userinfobot)
+2. Démarrez une conversation avec `/start`
+3. Il vous donnera votre Chat ID (un nombre comme `123456789`)
+
+**Méthode 2 (avec votre bot) :**
+
+1. **Recherchez votre bot** dans Telegram (avec le nom d'utilisateur choisi)
+2. **Envoyez un message** à votre bot (ex: "Hello")
+3. **Ouvrez cette URL** dans votre navigateur :
+
+   ```text
+   https://api.telegram.org/bot<VOTRE_TOKEN>/getUpdates
+   ```
+
+   (Remplacez `<VOTRE_TOKEN>` par votre token)
+4. **Trouvez votre Chat ID** dans la réponse JSON :
+
+   ```json
+   "chat":{"id":123456789,"first_name":"Votre Nom"...}
+   ```
 
 ---
 
