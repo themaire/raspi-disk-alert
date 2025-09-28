@@ -74,6 +74,92 @@ chmod 600 "$INSTALL_DIR/.env"  # Permissions restreintes pour le fichier de conf
 print_status "Création du lien symbolique..."
 ln -sf "$INSTALL_DIR/$SCRIPT_NAME" "/usr/local/bin/raspi-disk-alert"
 
+# Ajouter au PATH si nécessaire
+add_to_path() {
+    local shell_rc="$1"
+    local path_line='export PATH="/usr/local/bin:$PATH"'
+    
+    if [[ -f "$shell_rc" ]]; then
+        if ! grep -q "/usr/local/bin" "$shell_rc"; then
+            print_status "Ajout de /usr/local/bin au PATH dans $shell_rc"
+            echo "" >> "$shell_rc"
+            echo "# Ajouté par raspi-disk-alert installer" >> "$shell_rc"
+            echo "$path_line" >> "$shell_rc"
+            return 0
+        else
+            print_status "/usr/local/bin déjà présent dans $shell_rc"
+            return 1
+        fi
+    fi
+    return 1
+}
+
+# Détecter et configurer le shell de l'utilisateur réel (pas root)
+REAL_USER="${SUDO_USER:-$USER}"
+REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
+
+if [[ -n "$REAL_USER" && "$REAL_USER" != "root" ]]; then
+    print_status "Configuration du PATH pour l'utilisateur: $REAL_USER"
+    
+    # Détecter le shell par défaut de l'utilisateur
+    USER_SHELL=$(getent passwd "$REAL_USER" | cut -d: -f7)
+    SHELL_NAME=$(basename "$USER_SHELL")
+    
+    PATH_ADDED=false
+    
+    case "$SHELL_NAME" in
+        "zsh")
+            print_status "Shell détecté: Zsh"
+            if add_to_path "$REAL_HOME/.zshrc"; then
+                PATH_ADDED=true
+                print_success "PATH ajouté à ~/.zshrc"
+            fi
+            ;;
+        "bash")
+            print_status "Shell détecté: Bash"
+            # Essayer .bashrc en premier, puis .bash_profile
+            if add_to_path "$REAL_HOME/.bashrc"; then
+                PATH_ADDED=true
+                print_success "PATH ajouté à ~/.bashrc"
+            elif add_to_path "$REAL_HOME/.bash_profile"; then
+                PATH_ADDED=true
+                print_success "PATH ajouté à ~/.bash_profile"
+            fi
+            ;;
+        "fish")
+            print_status "Shell détecté: Fish"
+            FISH_CONFIG="$REAL_HOME/.config/fish/config.fish"
+            if [[ -f "$FISH_CONFIG" ]] && ! grep -q "/usr/local/bin" "$FISH_CONFIG"; then
+                echo "" >> "$FISH_CONFIG"
+                echo "# Ajouté par raspi-disk-alert installer" >> "$FISH_CONFIG"
+                echo "set -gx PATH /usr/local/bin \$PATH" >> "$FISH_CONFIG"
+                PATH_ADDED=true
+                print_success "PATH ajouté à ~/.config/fish/config.fish"
+            fi
+            ;;
+        *)
+            print_warning "Shell non reconnu: $SHELL_NAME"
+            print_status "Tentative avec .profile..."
+            if add_to_path "$REAL_HOME/.profile"; then
+                PATH_ADDED=true
+                print_success "PATH ajouté à ~/.profile"
+            fi
+            ;;
+    esac
+    
+    if [[ "$PATH_ADDED" == "true" ]]; then
+        print_success "Configuration PATH terminée !"
+        print_status "Redémarrez votre terminal ou exécutez: source ~/${SHELL_NAME}rc"
+        print_status "Vous pourrez ensuite utiliser: raspi-disk-alert (sans sudo pour les tests)"
+    else
+        print_warning "Impossible d'ajouter automatiquement au PATH"
+        print_status "Ajoutez manuellement cette ligne à votre fichier de config shell:"
+        echo "export PATH=\"/usr/local/bin:\$PATH\""
+    fi
+else
+    print_warning "Utilisateur réel non détecté, configuration PATH ignorée"
+fi
+
 # Créer le script de désinstallation
 print_status "Création du script de désinstallation..."
 cat > "$UNINSTALL_SCRIPT" << 'EOF'
@@ -149,6 +235,42 @@ if [[ -d "$INSTALL_DIR" ]]; then
     fi
 fi
 
+# Supprimer les modifications PATH (optionnel)
+REAL_USER="${SUDO_USER:-$USER}"
+REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
+
+if [[ -n "$REAL_USER" && "$REAL_USER" != "root" ]]; then
+    echo
+    read -p "Voulez-vous supprimer les modifications PATH des fichiers de config shell ? (y/N): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        print_status "Suppression des modifications PATH..."
+        
+        # Liste des fichiers à vérifier
+        CONFIG_FILES=(
+            "$REAL_HOME/.zshrc"
+            "$REAL_HOME/.bashrc" 
+            "$REAL_HOME/.bash_profile"
+            "$REAL_HOME/.profile"
+            "$REAL_HOME/.config/fish/config.fish"
+        )
+        
+        for config_file in "${CONFIG_FILES[@]}"; do
+            if [[ -f "$config_file" ]] && grep -q "raspi-disk-alert installer" "$config_file"; then
+                print_status "Nettoyage de $config_file"
+                # Supprimer la ligne de commentaire et la ligne PATH ajoutées
+                sed -i.bak '/# Ajouté par raspi-disk-alert installer/,+1d' "$config_file"
+                # Supprimer les lignes vides en fin de fichier si elles ont été ajoutées
+                sed -i.bak -e :a -e '/^\s*$/N; ba; s/\n$//; s/\n\s*$/\n/' "$config_file"
+                rm -f "$config_file.bak"
+            fi
+        done
+        
+        print_success "Modifications PATH supprimées"
+        print_warning "Redémarrez votre terminal pour appliquer les changements"
+    fi
+fi
+
 # Supprimer les tâches cron (optionnel)
 echo
 read -p "Voulez-vous supprimer les tâches cron associées ? (y/N): " -n 1 -r
@@ -194,6 +316,12 @@ echo "🗑️  Désinstallation: sudo $UNINSTALL_SCRIPT"
 echo
 print_status "Prochaines étapes:"
 echo "1. Éditez la configuration: sudo nano $INSTALL_DIR/.env"
-echo "2. Testez le script: sudo raspi-disk-alert"
-echo "3. Configurez le cron: sudo crontab -e"
+if [[ "$PATH_ADDED" == "true" ]]; then
+    echo "2. Redémarrez votre terminal ou exécutez: source ~/.${SHELL_NAME}rc"
+    echo "3. Testez le script: raspi-disk-alert (ou sudo raspi-disk-alert)"
+    echo "4. Configurez le cron: sudo crontab -e"
+else
+    echo "2. Testez le script: sudo raspi-disk-alert"
+    echo "3. Configurez le cron: sudo crontab -e"
+fi
 echo "   Ajoutez: 0 * * * * /usr/local/bin/raspi-disk-alert"

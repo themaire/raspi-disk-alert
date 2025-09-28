@@ -117,13 +117,33 @@ cd raspi-disk-alert
 sudo ./install.sh
 ```
 
-3. Configurer vos paramètres :
+   L'installation configurera automatiquement :
+
+- ✅ Installation dans `/usr/local/bin/raspi-disk-alert/`
+- ✅ Lien symbolique dans `/usr/local/bin/`
+- ✅ Configuration du PATH selon votre shell (zsh, bash, fish, etc.)
+- ✅ Permissions sécurisées
+- ✅ Script de désinstallation
+
+3. Redémarrer votre terminal ou recharger la configuration :
+
+```bash
+# Pour Zsh
+source ~/.zshrc
+
+# Pour Bash
+source ~/.bashrc
+
+# Ou simplement redémarrer le terminal
+```
+
+4. Configurer vos paramètres :
 
 ```bash
 sudo nano /usr/local/bin/raspi-disk-alert/.env
 ```
 
-4. Tester l'installation :
+5. Tester l'installation :
 
 ```bash
 sudo ./test.sh
@@ -172,12 +192,28 @@ sudo ./test.sh
 ```
 
 Ce script vérifie :
+
 - ✅ Présence des fichiers requis
 - ✅ Permissions correctes
 - ✅ Validité de la configuration
 - ✅ Dépendances système (curl, df)
 - ✅ Connexion Telegram
 - ✅ Envoi d'un message de test
+
+### Utilisation après installation
+
+Après l'installation, vous pouvez utiliser le script de plusieurs façons :
+
+```bash
+# Via le lien symbolique (recommandé)
+sudo raspi-disk-alert
+
+# Via le chemin complet
+sudo /usr/local/bin/raspi-disk-alert
+
+# Si votre PATH a été configuré correctement (sans sudo pour les tests)
+raspi-disk-alert --help
+```
 
 ### Tests manuels
 
@@ -266,6 +302,7 @@ sudo /usr/local/bin/uninstall-raspi-disk-alert.sh
 ```
 
 Le script de désinstallation :
+
 - 🗑️ Supprime tous les fichiers installés
 - ⚙️ Propose de conserver la configuration
 - 📅 Propose de supprimer les tâches cron
