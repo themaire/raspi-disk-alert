@@ -96,13 +96,44 @@ add_to_path() {
 
 # Détecter et configurer le shell de l'utilisateur réel (pas root)
 REAL_USER="${SUDO_USER:-$USER}"
-REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
+
+# Fonction pour récupérer le home directory (compatible macOS/Linux)
+get_user_home() {
+    local user="$1"
+    if command -v getent &> /dev/null; then
+        # Linux
+        getent passwd "$user" | cut -d: -f6
+    elif [[ "$(uname)" == "Darwin" ]]; then
+        # macOS
+        dscl . -read "/Users/$user" NFSHomeDirectory 2>/dev/null | awk '{print $2}' || echo "/Users/$user"
+    else
+        # Fallback
+        eval echo "~$user"
+    fi
+}
+
+# Fonction pour récupérer le shell par défaut (compatible macOS/Linux)
+get_user_shell() {
+    local user="$1"
+    if command -v getent &> /dev/null; then
+        # Linux
+        getent passwd "$user" | cut -d: -f7
+    elif [[ "$(uname)" == "Darwin" ]]; then
+        # macOS
+        dscl . -read "/Users/$user" UserShell 2>/dev/null | awk '{print $2}' || echo "$SHELL"
+    else
+        # Fallback
+        echo "$SHELL"
+    fi
+}
+
+REAL_HOME=$(get_user_home "$REAL_USER")
 
 if [[ -n "$REAL_USER" && "$REAL_USER" != "root" ]]; then
     print_status "Configuration du PATH pour l'utilisateur: $REAL_USER"
     
     # Détecter le shell par défaut de l'utilisateur
-    USER_SHELL=$(getent passwd "$REAL_USER" | cut -d: -f7)
+    USER_SHELL=$(get_user_shell "$REAL_USER")
     SHELL_NAME=$(basename "$USER_SHELL")
     
     PATH_ADDED=false
@@ -237,7 +268,23 @@ fi
 
 # Supprimer les modifications PATH (optionnel)
 REAL_USER="${SUDO_USER:-$USER}"
-REAL_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
+
+# Fonction pour récupérer le home directory (compatible macOS/Linux)
+get_user_home_uninstall() {
+    local user="$1"
+    if command -v getent &> /dev/null; then
+        # Linux
+        getent passwd "$user" | cut -d: -f6
+    elif [[ "$(uname)" == "Darwin" ]]; then
+        # macOS
+        dscl . -read "/Users/$user" NFSHomeDirectory 2>/dev/null | awk '{print $2}' || echo "/Users/$user"
+    else
+        # Fallback
+        eval echo "~$user"
+    fi
+}
+
+REAL_HOME=$(get_user_home_uninstall "$REAL_USER")
 
 if [[ -n "$REAL_USER" && "$REAL_USER" != "root" ]]; then
     echo

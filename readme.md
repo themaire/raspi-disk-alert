@@ -2,8 +2,20 @@
 
 ## Description
 
-Ce projet permet de **surveiller l'utilisation de plusieurs partitions sur un Raspberry Pi** et d'envoyer des alertes Telegram lorsque le seuil d'utilisation est dépassé.  
+Ce projet permet de **surveiller l'utilisation de plusieurs partitions** et d'envoyer des alertes Telegram lorsque le seuil d'utilisation est dépassé.  
+
+**Conçu initialement pour Raspberry Pi**, il est également **compatible avec macOS** et autres systèmes Unix/Linux.
+
 Le projet utilise un **script Bash léger** avec un fichier `.env` pour stocker la configuration.
+
+## Compatibilité
+
+✅ **Raspberry Pi** (Raspbian/Debian/Ubuntu)  
+✅ **macOS** (Monterey, Ventura, Sonoma...)  
+✅ **Linux** (Ubuntu, Debian, CentOS, Arch...)  
+✅ **Shells supportés** : Bash, Zsh, Fish
+
+**Prérequis :** `curl` et `df` (installés par défaut sur la plupart des systèmes)
 
 ---
 
