@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Récupérer le dossier du script
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Récupérer le dossier du script (résout les liens symboliques)
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")")" && pwd)"
 
 # Charger le .env situé dans le même dossier que le script
 source "$SCRIPT_DIR/.env"
@@ -12,9 +12,11 @@ SEND_ALERT=0
 
 # Boucle sur les partitions
 for PART in "${DISK_PATHS[@]}"; do
-    USAGE_PCT=$(df -hP "$PART" | awk 'NR==2 {print $5}' | tr -d '%')
-    USED=$(df -hP "$PART" | awk 'NR==2 {print $3}')
-    SIZE=$(df -hP "$PART" | awk 'NR==2 {print $2}')
+    # Utiliser df -h pour format humain (Go, To, etc.)
+    DF_OUTPUT=$(df -h "$PART" | awk 'NR==2')
+    USAGE_PCT=$(echo "$DF_OUTPUT" | awk '{print $5}' | tr -d '%')
+    USED=$(echo "$DF_OUTPUT" | awk '{print $3}')
+    SIZE=$(echo "$DF_OUTPUT" | awk '{print $2}')
 
     if [ "$USAGE_PCT" -ge "$DISK_THRESHOLD" ]; then
         # Message simplifié pour éviter les problèmes MarkdownV2

@@ -48,7 +48,13 @@ mkdir -p "$INSTALL_DIR"
 
 # Copier les fichiers
 print_status "Copie des fichiers..."
-cp "$SCRIPT_NAME" "$INSTALL_DIR/"
+# S'assurer qu'on copie le vrai fichier, pas un lien symbolique
+if [[ -L "$SCRIPT_NAME" ]]; then
+    print_warning "Le fichier source $SCRIPT_NAME est un lien symbolique, copie du fichier cible"
+    cp -L "$SCRIPT_NAME" "$INSTALL_DIR/"
+else
+    cp "$SCRIPT_NAME" "$INSTALL_DIR/"
+fi
 cp ".env.example" "$INSTALL_DIR/"
 
 # Vérifier si .env existe déjà
@@ -72,7 +78,7 @@ chmod 600 "$INSTALL_DIR/.env"  # Permissions restreintes pour le fichier de conf
 
 # Créer un lien symbolique pour faciliter l'exécution
 print_status "Création du lien symbolique..."
-ln -sf "$INSTALL_DIR/$SCRIPT_NAME" "/usr/local/bin/raspi-disk-alert"
+ln -sf "$INSTALL_DIR/$SCRIPT_NAME" "/usr/local/bin/raspi-disk-alert-cmd"
 
 # Ajouter au PATH si nécessaire
 add_to_path() {
