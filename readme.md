@@ -1,5 +1,22 @@
 # Surveillance Disque et Alertes Telegram
 
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                    🚨 ALERTE DISQUE 🚨                     │
+│                                                             │
+│  Serveur : MacBook-Pro-de-themaire                           │
+│  Date    : 28/09/2025 à 22:15:52                           │
+│                                                             │
+│  Partitions en alerte (seuil: 80%) :                       │
+│                                                             │
+│  🔴 /mnt/backup        : 95% utilisé (950G sur 1.0T)       │
+│  🟠 /mnt/storage       : 87% utilisé (1.7T sur 2.0T)       │
+│  🔴 /mnt/documents     : 92% utilisé (460G sur 500G)       │
+│                                                             │
+│  💡 Action recommandée : Libérer de l'espace disque        │
+└─────────────────────────────────────────────────────────────┘
+```
+
 ## Description
 
 Ce projet permet de **surveiller l'utilisation de plusieurs partitions** et d'envoyer des alertes Telegram lorsque le seuil d'utilisation est dépassé.  
