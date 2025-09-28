@@ -287,7 +287,7 @@ sudo chmod 600 /usr/local/bin/raspi-disk-alert/.env
 4. Créer le lien symbolique :
 
 ```bash
-sudo ln -sf /usr/local/bin/raspi-disk-alert/rasp-disk-alert.sh /usr/local/bin/raspi-disk-alert
+sudo ln -sf /usr/local/bin/raspi-disk-alert/rasp-disk-alert.sh /usr/local/bin/raspi-disk-alert-cmd
 ```
 
 ---
