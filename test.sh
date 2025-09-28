@@ -95,6 +95,78 @@ SCRIPT_FILE="$SCRIPT_DIR/rasp-disk-alert.sh"
 
 echo "🧪 Tests de validation pour raspi-disk-alert [$TEST_MODE]"
 echo "========================================================="
+echo
+print_info "Ce script vérifie que tous les composants nécessaires sont présents"
+print_info "sur votre machine pour faire fonctionner le système de surveillance."
+echo
+
+# Démonstration du résultat final en premier
+print_status "💡 DÉMONSTRATION: Aperçu du message qui sera envoyé à Telegram"
+echo "================================================================"
+
+# Créer une simulation avec seuil très bas pour voir le résultat
+DEMO_THRESHOLD=1
+hostname=$(hostname)
+demo_alerts=()
+demo_message="🚨 <b>Alerte disque sur $hostname:</b>\n\n"
+
+# Analyser les disques avec seuil très bas pour demo
+print_info "Simulation avec seuil de démonstration à $DEMO_THRESHOLD% (vs le vrai seuil configuré)..."
+echo
+
+for path in "${DISK_PATHS[@]}"; do
+    if [[ -d "$path" ]]; then
+        # Obtenir les informations du disque
+        disk_info=$(df -hP "$path" | tail -1)
+        usage_percent=$(echo "$disk_info" | awk '{print $5}' | sed 's/%//')
+        used_space=$(echo "$disk_info" | awk '{print $3}')
+        total_space=$(echo "$disk_info" | awk '{print $2}')
+        
+        print_info "   $path: ${usage_percent}% utilisé (${used_space}/${total_space})"
+        
+        # Avec seuil de demo, tout sera en "alerte"
+        if [[ "$usage_percent" -ge "$DEMO_THRESHOLD" ]]; then
+            demo_alerts+=("$path : ${usage_percent}% utilisé ${used_space} sur ${total_space}")
+        fi
+    fi
+done
+
+echo
+
+# Toujours afficher un aperçu, même simulé
+if [[ ${#demo_alerts[@]} -gt 0 ]]; then
+    print_success "🎭 APERÇU du message Telegram qui serait envoyé:"
+    echo "┌─────────────────────────────────────────────────────────────┐"
+    echo "│ 🚨 Alerte disque sur $hostname:                               │"
+    echo "│                                                             │"
+    for alert in "${demo_alerts[@]}"; do
+        printf "│ ⚠️  %-55s │\n" "$alert"
+    done
+    echo "│                                                             │"
+    echo "│ 📊 Seuil configuré: ${DISK_THRESHOLD:-80}%                                     │"
+    echo "│ 🕐 $(date)                                    │"
+    echo "└─────────────────────────────────────────────────────────────┘"
+else
+    # Créer un exemple fictif pour montrer à quoi ça ressemble
+    print_info "Vos disques sont tous sous le seuil de 1% - voici un EXEMPLE de ce qui serait envoyé:"
+    echo "┌─────────────────────────────────────────────────────────────┐"
+    echo "│ 🚨 Alerte disque sur $hostname:                               │"
+    echo "│                                                             │"
+    echo "│ ⚠️  /mnt/disk1 : 85% utilisé 850G sur 1.0T                 │"
+    echo "│ ⚠️  /mnt/backup : 95% utilisé 1.9T sur 2.0T                │"
+    echo "│                                                             │"
+    echo "│ 📊 Seuil configuré: ${DISK_THRESHOLD:-80}%                                     │"
+    echo "│ 🕐 $(date)                                    │"
+    echo "└─────────────────────────────────────────────────────────────┘"
+    print_warning "↑ Ceci est un EXEMPLE fictif pour illustration"
+fi
+
+echo
+print_info "☝️  Ceci était une DÉMONSTRATION avec seuil ${DEMO_THRESHOLD}% pour l'exemple"
+print_info "   En réalité, votre seuil configuré est: ${DISK_THRESHOLD:-80}%"
+echo
+print_status "Maintenant, vérifions que tout est prêt pour que ça fonctionne..."
+echo
 
 # Test 1: Vérifier la présence des fichiers
 print_status "Vérification des fichiers requis..."
