@@ -241,6 +241,40 @@ sudo ln -sf /usr/local/bin/raspi-disk-alert/rasp-disk-alert.sh /usr/local/bin/ra
 
 ---
 
+## Démonstration
+
+### Script de démonstration
+
+Un script `demo.sh` est fourni pour présenter le projet et simuler une sortie d'alerte :
+
+```bash
+./demo.sh
+```
+
+Ce script affiche :
+
+- 📁 **Structure du projet** avec la liste des fichiers
+- ⚙️ **Configuration d'exemple** (contenu de `.env.example`)
+- 🔧 **Permissions des scripts** pour vérifier l'exécutabilité
+- 💡 **Commandes d'utilisation** typiques avec exemples
+- 📊 **Simulation d'alerte** avec un exemple formaté d'alerte Telegram
+
+### Mode démonstration du script principal
+
+Le script principal supporte également un mode démonstration :
+
+```bash
+# Test local
+./rasp-disk-alert.sh --demo
+
+# Après installation
+sudo raspi-disk-alert --demo
+```
+
+Ce mode simule une alerte avec des données fictives pour tester le formatage sans avoir besoin de disques réellement pleins.
+
+---
+
 ## Tests et validation
 
 ### Script de test automatique
