@@ -59,7 +59,41 @@ DISK_PATHS=(/ /mnt/partage_reseau /mnt/serveur_fbi /mnt/scanner /mnt/disque_exte
 sudo /usr/local/bin/check_disk_alert.sh
 ```
 
-   Le message Telegram ressemble à :
+3. **bis - Après installation automatique** :
+
+Une fois installé avec le script `install.sh`, le programme est accessible via une commande simplifiée :
+
+```bash
+# Commande principale
+sudo raspi-disk-alert-cmd
+
+# Mode démonstration
+sudo raspi-disk-alert-cmd --demo
+
+# Chemin complet (équivalent)
+sudo /usr/local/bin/raspi-disk-alert/rasp-disk-alert.sh
+```
+
+   Le message affiché ressemble maintenant à :
+   
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                      ALERTE DISQUE                         │
+│                                                             │
+│  Serveur : MacBook-Pro-de-themaire                         │
+│  Date    : 28/09/2025 à 22:15:52                           │
+│                                                             │
+│  Partitions en alerte (seuil: 80%) :                       │
+│                                                             │
+│  /mnt/serveur_fbi : 96% utilise 880G sur 917G             │
+│  /mnt/scanner : 100% utilise 584G sur 587G                │
+│  /mnt/disque_externe_1 : 100% utilise 1,9T sur 1,9T       │
+│                                                             │
+│  Action recommandée : Libérer de l'espace disque           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+   Et le message Telegram (version simplifiée) :
    
 ```text
 Alerte disque sur ton_nom_de_serveur:
