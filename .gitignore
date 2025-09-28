@@ -1,0 +1,13 @@
+# Fichiers de configuration sensibles
+.env
+
+# Fichiers de logs
+*.log
+
+# Fichiers temporaires
+*.tmp
+*.bak
+
+# Fichiers spécifiques au système
+.DS_Store
+Thumbs.db
