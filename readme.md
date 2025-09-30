@@ -19,7 +19,9 @@
 
 ## Description
 
-Ce projet permet de **surveiller l'utilisation de plusieurs partitions** et d'envoyer des alertes Telegram lorsque le seuil d'utilisation est dépassé.  
+Ce projet permet de **surveiller l'utilisation de plusieurs partitions** et d'envoyer des alertes Telegram lorsque le seuil d'utilisation est dépassé.
+
+🔧💻 !! Si vous en etes capable, aidez moi à ameliorer en ajoutant d'autres moyens de notification (mail, Discord...).
 
 **Conçu initialement pour Raspberry Pi**, il est également **compatible avec macOS** et autres systèmes Unix/Linux.
 
